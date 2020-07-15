@@ -52,6 +52,38 @@ class BTree {
          * Implement this function to insert in the B+Tree.
          * Also, insert in student.csv after inserting in B+Tree.
          */
+
+		BTreeNode node = this.root;
+
+		 if(!node.leaf) {
+    		for(int child = 0; child < node.n; child++) {
+				insert(student);
+				if(student == null){
+					return null;
+				}
+				else {
+					if (node.n < node.t) {
+						insert(student); //not sure this line is right
+						student = null;
+						return this; //? 
+					}
+					else {
+						//split
+						if (node==this.root) {
+							//new node w pointer to inserted ? and update root ptr
+							BTreeNode newnode = new BTreeNode(t, false);
+							//set root pntr
+						}
+					}
+				}
+			}
+		 }
+		 if (node.leaf) {
+			 if(node.n < node.t) {
+				insert(student); //again, wtf is this
+				student = null;
+			 }
+		 }
         return this;
     }
 
