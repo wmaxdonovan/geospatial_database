@@ -43,6 +43,38 @@ class BTree {
          * Return recordID for the given StudentID.
          * Otherwise, print out a message that the given studentId has not been found in the table and return -1.
          */
+
+    	// Find the correct leaf node
+    	BTreeNode cur = root;
+    	while(!cur.leaf)
+    	{
+    		for (int i = 0; i < cur.n; i++)
+    		{
+    			if (studentId < cur.keys[i])
+    			{
+    				cur = cur.children[i];
+    				break;
+    			}
+    			
+    			if (i == cur.n - 1)
+    			{
+    				cur = cur.children[cur.n];
+    				break;
+    			}
+    		}
+    	}
+    	
+    	// Look for value in leaf node
+    	for (int i = 0; i < cur.n; i++)
+    	{
+    		if (studentId == cur.keys[i])
+    		{
+    			return cur.values[i];
+    		}
+    	}
+    	
+    	// Value was not found in the leaf node
+    	System.out.println("The given studentId " + studentId + " was not found in the table.");
         return -1;
     }
 
