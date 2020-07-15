@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.lang.Math;
 
 import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
@@ -13,6 +14,8 @@ import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
  * You do not need to change this class.
  */
 public class BTreeMain {
+	
+	private static long recordIndex;
 
     public static void main(String[] args) {
 
@@ -35,6 +38,7 @@ public class BTreeMain {
 
         for (Student s : studentsDB) {
             bTree.insert(s);
+            recordIndex = Math.max(recordIndex, s.recordId);
         }
 
         /** Start reading the operations now from input file*/
@@ -54,8 +58,7 @@ public class BTreeMain {
                             String major = s2.next();
                             String level = s2.next();
                             int age = Integer.parseInt(s2.next());
-                            /** TODO: Write a logic to generate recordID*/
-                            long recordID = 1234;
+                            long recordID = ++recordIndex;
 
                             Student s = new Student(studentId, age, studentName, major, level, recordID);
                             bTree.insert(s);
