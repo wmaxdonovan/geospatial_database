@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -216,7 +217,11 @@ class BTree {
     	}
     	child.n += sib.n + 1;
     	node.n--;
-    }
+	}
+	
+	private void split(BTreeNode node, int index) {
+		//
+	}
     
     public void fill(BTreeNode node, int index) {
     	if(index != 0 && node.children[index - 1].n >= t) {
@@ -314,7 +319,36 @@ class BTree {
 				}
 			}
 		}
-    }
+	}
+	
+	public void insertToFile(String csv, Student s) {
+		File file = new File(csv);
+		FileWriter fw = null;
+		BufferedWriter bw = null;
+
+		try {
+			fw = new FileWriter(file);
+			bw = new BufferedWriter(fw);
+			PrintWriter pw = new PrintWriter(bw);
+			
+			String entry = s.studentId+","+s.age+","+s.studentName+","+s.major+","+s.level+","+s.recordId;
+
+			pw.println(entry);
+			pw.close();
+		} catch(FileNotFoundException e) {
+			e.printStackTrace();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(bw != null) {
+				try {
+					bw.close();
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
     
     List<Long> print() {
         /**
