@@ -65,23 +65,27 @@ class BTree {
     	
     	BTreeNode node = this.root;
     	
-    	// "delete" from empty tree
+    	// "delete" from empty tree ;)
     	if(node == null) {
     		return false;
     	}
     	
-    	LinkedList<BTreeNode> stack = new LinkedList<BTreeNode>();
-    	
-    	// search for leaf node
+    	LinkedList<BTreeNode> parent_stack = new LinkedList<BTreeNode>();
+    	LinkedList<Integer> index_stack = new LinkedList<Integer>();
+
+    	// search for leaf node and track path
     	while(!node.leaf) {
-    		stack.push(node);
     		for(int child = 0; child < node.n; child++) {
     			if(studentId < node.keys[child]) {
     				node = node.children[child];
+    	    		parent_stack.push(node);
+    				index_stack.push(child);
     				break;
     			}
     			else if(studentId == node.keys[child] || child + 1 == node.keys.length) {
     				node = node.children[child + 1];
+    	    		parent_stack.push(node);
+    				index_stack.push(child);
     				break;
     			}
     		}
@@ -89,51 +93,26 @@ class BTree {
     	
     	boolean found = false;
  
-    	// search node for key-value pair
+    	// determine if sid in leaf node
     	for(int index = 0; index < node.n; index++) {
     		if(studentId == node.values[index]) {
     			found = true;
-    			deleteFromNode(node, index);
     		}
     	}
     	
-    	// delete line from csv
+    	// update nodes along path
     	if(found) {
-    		File input = new File("Student.csv");
-    		File temp = new File("tempStudent.csv");
-    		BufferedReader br = null;
-    		BufferedWriter bw = null;
-    		String line = "";
-    		String dilimiter = ",";
-    		try {
-    			br = new BufferedReader(new FileReader(input));
-    			bw = new BufferedWriter(new FileWriter(temp));
-    			while((line = br.readLine()) != null) {
-    				int sid = Integer.parseInt(line.split(dilimiter)[0]);
-    				if(studentId == sid) {
-    					continue;
-    				}
-    				else {
-        				bw.write(line + '\n');
-    				}
-    			}
-    		} catch(FileNotFoundException e) {
-    			e.printStackTrace();
-    		} catch(IOException e) {
-    			e.printStackTrace();
-    		} finally {
-    			if(br != null) {
-    				try {
-    					br.close();
-    					bw.close();
-    					temp.renameTo(input);
-    				} catch(IOException e) {
-    					e.printStackTrace();
-    				}
+    		while(!parent_stack.isEmpty()) {
+    			BTreeNode parent = parent_stack.pop();
+    			int index = index_stack.pop();
+    			deleteFromNode(parent, index);
+    			if(parent.children[index].n < parent.t) {
+    				fill(parent, index);
     			}
     		}
+    		// delete removed student from the csv file
+    		deleteFromFile("Student.csv", studentId);
     	}
-    	
     	return found;
     }
     
@@ -147,34 +126,36 @@ class BTree {
     	}
     	else {
     		if(node.children[index].n >= node.t) {
-    			long predecessor = getPred(node, index);
-    			node.keys[index] = predecessor;
-    			delete(predecessor);
+    			BTreeNode child = node.children[index];
+    			BTreeNode predecessor = getPred(child);
+    			node.keys[index] = predecessor.keys[0];
+    			deleteFromNode(predecessor, 0);
     		} else if(node.children[index + 1].n >= t) {
-    			long successor = getSucc(node, index);
-    			node.keys[index] = successor;
-    			delete(successor);
+    			BTreeNode child = node.children[index + 1];
+    			BTreeNode successor = getSucc(child);
+    			node.keys[index] = successor.keys[successor.n - 1];
+    			deleteFromNode(successor, successor.n);
     		} else {
     			merge(node, index);
-    			delete(node.keys[index]);
+    			deleteFromNode(node, index);
     		}
     	}
     }
     
-    public long getSucc(BTreeNode node, int index) {
-    	BTreeNode curr = node.children[index];
+    public BTreeNode getSucc(BTreeNode node) {
+    	BTreeNode curr = node;
     	while(!curr.leaf) {
     		curr = curr.children[0];
     	}
-    	return curr.keys[0];
+    	return curr;
     }
 
-    public long getPred(BTreeNode node, int index) {
-    	BTreeNode curr = node.children[index];
+    public BTreeNode getPred(BTreeNode node) {
+    	BTreeNode curr = node;
     	while(!curr.leaf) {
     		curr = curr.children[curr.n];
     	}
-    	return curr.keys[curr.n - 1];
+    	return curr;
     }
     
     public void merge(BTreeNode node, int index) {
@@ -204,6 +185,105 @@ class BTree {
     	child.n += sib.n + 1;
     	node.n--;
     }
+    
+    public void fill(BTreeNode node, int index) {
+    	if(index != 0 && node.children[index - 1].n >= t) {
+    		borrowFromPrev(node, index);
+    	} else if(index != node.n && node.children[index + 1].n >= t) {
+    		borrowFromNext(node, index);
+    	} else {
+    		if(index != node.n) {
+    			merge(node, index);
+    		} else {
+    			merge(node, index - 1);
+    		}
+    	}
+    }
+    
+    public void borrowFromPrev(BTreeNode node, int index) {
+    	BTreeNode child = node.children[index];
+    	BTreeNode sib = node.children[index - 1];
+    	
+    	for(int i = child.n - 1; i >= 0; i--) {
+    		child.keys[i + 1] = child.keys[i];
+    		if(child.leaf) {
+    			child.values[i + 1] = child.values[i];
+    		} else {
+    			child.children[i + 1] = child.children[i];
+    		}
+    	}
+    	child.keys[0] = node.keys[index - 1];
+    	if(child.leaf) {
+    		child.values[0] = node.values[index - 1];
+    	} else {
+    		child.children[0] = sib.children[sib.n];
+    	}
+    	child.n += 1;
+    	sib.n -= 1;
+    }
+    
+    public void borrowFromNext(BTreeNode node, int index) {
+    	BTreeNode child = node.children[index];
+    	BTreeNode sib = node.children[index + 1];
+    	
+    	child.keys[child.n] = node.keys[index];
+    	if(child.leaf) {
+    		child.values[child.n] = node.keys[index];
+    	} else {
+    		child.children[child.n + 1] = sib.children[0];
+    	}
+    	
+    	node.keys[index] = sib.keys[0];
+    	
+    	for(int i = 1; i < sib.n; i++) {
+    		sib.keys[i - 1] = sib.keys[i];
+    		if(sib.leaf) {
+    			sib.values[i - 1] = sib.values[i];
+    		} else {
+    			sib.children[i - 1] = sib.children[i];
+    		}
+    	}
+    	
+    	child.n += 1;
+    	sib.n -= 1;
+    }
+    
+    public void deleteFromFile(String csv, long key) {
+		File input = new File(csv);
+		File temp = new File("temp.csv");
+		BufferedReader br = null;
+		BufferedWriter bw = null;
+		String line = "";
+		String dilimiter = ",";
+		try {
+			br = new BufferedReader(new FileReader(input));
+			bw = new BufferedWriter(new FileWriter(temp));
+			while((line = br.readLine()) != null) {
+				long sid = Long.parseLong(line.split(dilimiter)[0]);
+				if(key == sid) {
+					continue;
+				}
+				else {
+    				bw.write(line + '\n');
+				}
+			}
+		} catch(FileNotFoundException e) {
+			e.printStackTrace();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(br != null) {
+				try {
+					br.close();
+					bw.close();
+					temp.renameTo(input);
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+    }
+    
     List<Long> print() {
 
         List<Long> listOfRecordID = new ArrayList<>();
