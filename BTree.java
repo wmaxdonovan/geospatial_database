@@ -58,13 +58,13 @@ class BTree {
 
 		 if(!node.leaf) {
     		for(int child = 0; child < node.n; child++) {
-				insert(student);
+				insertIntoNode(node, child); //
 				if(student == null){
 					return null;
 				}
 				else {
 					if (node.n < node.t) {
-						insert(student); //not sure this line is right
+						insertIntoNode(node, child); //not sure this line is right
 						student = null;
 						return this; //? 
 					}
@@ -85,6 +85,8 @@ class BTree {
 				student = null;
 			 }
 		 }
+
+		insertToFile("Student.csv", student);
         return this;
     }
 
@@ -174,7 +176,12 @@ class BTree {
     		}
     	}
     }
-    
+	
+	public void insertIntoNode(BTreeNode node, int index) {
+		if(node.leaf){
+
+	}
+
     public BTreeNode getSucc(BTreeNode node) {
     	BTreeNode curr = node;
     	while(!curr.leaf) {
