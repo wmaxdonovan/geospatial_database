@@ -38,8 +38,6 @@ class BTree {
 
     long search(long studentId) {
         /**
-         * TODO:
-         * Implement this function to search in the B+Tree.
          * Return recordID for the given StudentID.
          * Otherwise, print out a message that the given studentId has not been found in the table and return -1.
          */
