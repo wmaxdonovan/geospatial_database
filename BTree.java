@@ -317,15 +317,24 @@ class BTree {
     }
     
     List<Long> print() {
+        /**
+         * Return a list of recordIDs from left to right of leaf nodes.
+         */
 
         List<Long> listOfRecordID = new ArrayList<>();
 
-        /**
-         * TODO:
-         * Implement this function to print the B+Tree.
-         * Return a list of recordIDs from left to right of leaf nodes.
-         *
-         */
+        BTreeNode cur = getSucc(root);
+        do
+        {
+        	for (long i : cur.values)
+        	{
+        		if (i == 0) continue;
+        		listOfRecordID.add(i);
+        	}
+        	cur = cur.next;        	
+        }
+        while (cur.next != null);
+        
         return listOfRecordID;
     }
 }
