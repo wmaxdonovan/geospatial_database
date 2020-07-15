@@ -63,22 +63,25 @@ class BTree {
          * Return true if the student is deleted successfully otherwise, return false.
          */
     	
-    	BTreeNode currNode = this.root;
-    	if(currNode == null) {
+    	BTreeNode node = this.root;
+    	
+    	// "delete" from empty tree
+    	if(node == null) {
     		return false;
     	}
     	
     	LinkedList<BTreeNode> stack = new LinkedList<BTreeNode>();
     	
-    	while(!currNode.leaf) {
-    		stack.push(currNode);
-    		for(int child = 0; child < currNode.keys.length; child++) {
-    			if(studentId < currNode.keys[child]) {
-    				currNode = currNode.children[child];
+    	// search for leaf node
+    	while(!node.leaf) {
+    		stack.push(node);
+    		for(int child = 0; child < node.n; child++) {
+    			if(studentId < node.keys[child]) {
+    				node = node.children[child];
     				break;
     			}
-    			else if(studentId == currNode.keys[child] || child + 1 == currNode.keys.length) {
-    				currNode = currNode.children[child + 1];
+    			else if(studentId == node.keys[child] || child + 1 == node.keys.length) {
+    				node = node.children[child + 1];
     				break;
     			}
     		}
@@ -86,30 +89,15 @@ class BTree {
     	
     	boolean found = false;
  
-    	for(int value = 0; value < currNode.values.length; value++) {
-    		if(studentId == currNode.values[value]) {
+    	// search node for key-value pair
+    	for(int index = 0; index < node.n; index++) {
+    		if(studentId == node.values[index]) {
     			found = true;
-    			if(currNode == this.root) {
-    				// delete key and value 
-    			}
-    			if(currNode.keys.length - 1 > Math.ceil(this.t / 2.0)) {
-    				// delete key and value
-    				BTreeNode parent = stack.peek();
-    				for(int i = 0; i < parent.keys.length; i++) {
-    					if(studentId == parent.keys[i]) {
-    						parent.keys[i] = currNode.keys[0];
-    					}
-    				}
-    			} else {
-    				// delete key and value
-    				BTreeNode parent = stack.peek();
-    				for(int i = 0; i < parent.keys.length; i++) {
-    					// underflow. check conditions and merge
-    				}
-    			}
+    			deleteFromNode(node, index);
     		}
     	}
     	
+    	// delete line from csv
     	if(found) {
     		File input = new File("Student.csv");
     		File temp = new File("tempStudent.csv");
@@ -149,7 +137,73 @@ class BTree {
     	return found;
     }
     
+    public void deleteFromNode(BTreeNode node, int index) {
+    	if(node.leaf) {
+    		for(int i = index + 1; i < node.n; i++) {
+    			node.keys[i - 1] = node.keys[i];
+    			node.values[i - 1] = node.values[i];
+    		}
+    		node.n--;
+    	}
+    	else {
+    		if(node.children[index].n >= node.t) {
+    			long predecessor = getPred(node, index);
+    			node.keys[index] = predecessor;
+    			delete(predecessor);
+    		} else if(node.children[index + 1].n >= t) {
+    			long successor = getSucc(node, index);
+    			node.keys[index] = successor;
+    			delete(successor);
+    		} else {
+    			merge(node, index);
+    			delete(node.keys[index]);
+    		}
+    	}
+    }
+    
+    public long getSucc(BTreeNode node, int index) {
+    	BTreeNode curr = node.children[index];
+    	while(!curr.leaf) {
+    		curr = curr.children[0];
+    	}
+    	return curr.keys[0];
+    }
 
+    public long getPred(BTreeNode node, int index) {
+    	BTreeNode curr = node.children[index];
+    	while(!curr.leaf) {
+    		curr = curr.children[curr.n];
+    	}
+    	return curr.keys[curr.n - 1];
+    }
+    
+    public void merge(BTreeNode node, int index) {
+    	BTreeNode child = node.children[index];
+    	BTreeNode sib = node.children[index + 1];
+    	
+    	child.keys[node.t - 1] = node.keys[index];
+    	child.values[node.t - 1] = node.values[index];
+    	
+    	for(int i = 0; i < sib.n; i++) {
+    		child.keys[node.t + i] = sib.keys[i];
+    		if(child.leaf) {
+    			child.values[node.t + i] = sib.values[i];
+    		} else {
+    			child.children[node.t + i] = sib.children[i];
+    		}		
+    	}
+    	
+    	for(int i = index + 1; i < node.n; i++) {
+    		node.keys[i - 1] = node.keys[i];
+    		if(child.leaf) {
+        		node.values[i - 1] = node.values[i];
+    		} else {
+    			node.children[i - 1] = node.children[i];
+    		}
+    	}
+    	child.n += sib.n + 1;
+    	node.n--;
+    }
     List<Long> print() {
 
         List<Long> listOfRecordID = new ArrayList<>();
