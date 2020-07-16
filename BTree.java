@@ -42,18 +42,21 @@ class BTree {
          */
 
     	BTreeNode cur = this.root;
+    	// Check to ensure tree isn't empty
     	if(cur == null) {
     		System.out.println("The given studentId " + studentId + " was not found in the table.");
     		return -1;
     	}
 
-    	// search for leaf node
+    	// search for correct leaf node
     	while(cur != null && !cur.leaf) {
     		for(int child = 0; child < cur.n; child++) {
+    			// Check for left-of-value (LT) traverse
     			if(studentId < cur.keys[child]) {
     				cur = cur.children[child];
     				break;
     			}
+    			// Check for rightmost link traverse
     			else if(studentId == cur.keys[child] || child + 1 == cur.n) {
     				cur = cur.children[child + 1];
     				break;
@@ -61,17 +64,17 @@ class BTree {
     		}
     	}
     	
+    	// Check for key in leaf node
     	if(cur != null) {
-        	// match value in leaf node
         	for (int i = 0; i < cur.n; i++)
         	{
         		if (studentId == cur.keys[i])
         		{
+        			// Key found
         			return cur.values[i];
         		}
         	}
     	}
-
     	
     	// Value was not found in the leaf node
     	System.out.println("The given studentId " + studentId + " was not found in the table.");
@@ -447,16 +450,20 @@ class BTree {
 
         List<Long> listOfRecordID = new ArrayList<>();
 
+        // Start at the leftmost leaf node
         BTreeNode cur = getSucc(root);
         do
         {
+        	// Print each valid value in the node
         	for (long i : cur.values)
         	{
         		if (i == 0) continue;
         		listOfRecordID.add(i);
         	}
+        	// Move on to next node
         	cur = cur.next;        	
         }
+        // End at rightmost node
         while (cur.next != null);
         
 		return listOfRecordID;

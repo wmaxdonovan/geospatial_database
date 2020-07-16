@@ -100,6 +100,7 @@ public class BTreeMain {
     private static List<Student> getStudents() {
         List<Student> studentList = new ArrayList<>();
         
+        // Open scanner for the Students.csv file
         Scanner studentScan = null;
         try {
         	studentScan = new Scanner(new File("Student.csv"));
@@ -109,9 +110,11 @@ public class BTreeMain {
             System.out.println("File not found.");
         }
         
+        // Parse csv line-by-line, split entries on comma
         while (studentScan.hasNext())
         {
         	String[] line = studentScan.nextLine().split(",");
+        	// Create new student obj from parsed data
         	Student s = new Student(
         		Long.parseLong(line[0]),
         		Integer.parseInt(line[4]),
@@ -120,6 +123,7 @@ public class BTreeMain {
         		line[3],
         		Long.parseLong(line[5])
         	);
+        	// Add to parsed list of students
         	studentList.add(s);
         }
         studentScan.close();
