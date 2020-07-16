@@ -10,9 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -43,34 +41,37 @@ class BTree {
          * Otherwise, print out a message that the given studentId has not been found in the table and return -1.
          */
 
-    	// Find the correct leaf node
-    	BTreeNode cur = root;
-    	while(!cur.leaf)
-    	{
-    		for (int i = 0; i < cur.n; i++)
-    		{
-    			if (studentId < cur.keys[i])
-    			{
-    				cur = cur.children[i];
+    	BTreeNode cur = this.root;
+    	if(cur == null) {
+    		System.out.println("The given studentId " + studentId + " was not found in the table.");
+    		return -1;
+    	}
+
+    	// search for leaf node
+    	while(cur != null && !cur.leaf) {
+    		for(int child = 0; child < cur.n; child++) {
+    			if(studentId < cur.keys[child]) {
+    				cur = cur.children[child];
     				break;
     			}
-    			
-    			if (i == cur.n - 1)
-    			{
-    				cur = cur.children[cur.n];
+    			else if(studentId == cur.keys[child] || child + 1 == cur.n) {
+    				cur = cur.children[child + 1];
     				break;
     			}
     		}
     	}
     	
-    	// Look for value in leaf node
-    	for (int i = 0; i < cur.n; i++)
-    	{
-    		if (studentId == cur.keys[i])
-    		{
-    			return cur.values[i];
-    		}
+    	if(cur != null) {
+        	// match value in leaf node
+        	for (int i = 0; i < cur.n; i++)
+        	{
+        		if (studentId == cur.keys[i])
+        		{
+        			return cur.values[i];
+        		}
+        	}
     	}
+
     	
     	// Value was not found in the leaf node
     	System.out.println("The given studentId " + studentId + " was not found in the table.");
@@ -79,51 +80,138 @@ class BTree {
 
     BTree insert(Student student) {
         /**
-         * TODO:
-         * Implement this function to insert in the B+Tree.
+         * Insert into the B+Tree.
          * Also, insert in student.csv after inserting in B+Tree.
          */
 
-		BTreeNode node = this.root;
-
-		 if(!node.leaf) {
-    		for(int child = 0; child < node.n; child++) {
-				insertIntoNode(node, child); //
-				if(student == null){
-					return null;
-				}
-				else {
-					if (node.n < node.t) {
-						insertIntoNode(node, child); //not sure this line is right
-						student = null;
-						return this; //? 
-					}
-					else {
-						//split
-						if (node==this.root) {
-							//new node w pointer to inserted ? and update root ptr
-							BTreeNode newnode = new BTreeNode(t, false);
-							//set root pntr
-						}
-					}
-				}
-			}
-		 }
-		 if (node.leaf) {
-			 if(node.n < node.t) {
-				insert(student); //again, wtf is this
-				student = null;
-			 }
-		 }
+    	long key;
+    	if(student == null) {
+    		return null;
+    	}
+    	else {
+    		key = student.studentId;
+    	}
+    	if(this.root == null) {
+    		this.root = new BTreeNode(this.t, true);
+    		this.root.keys[0] = key;
+    		this.root.values[0] = key;
+    	}
+    	else {
+    		if(this.root.n == (2 * t) - 1) {
+    			BTreeNode newRoot = new BTreeNode(this.t, false);
+    			newRoot.children[0] = this.root;
+    			split(newRoot, 0);
+    			
+    			int index = 0;
+    			if(newRoot.keys[0] < key) {
+    				index++;
+    			}
+    			insertIntoNode(newRoot.children[index], key);
+    			this.root = newRoot;
+    			
+    		}
+    		else {
+    			insertIntoNode(this.root, key);
+    		}
+    	}
 
 		insertToFile("Student.csv", student);
         return this;
     }
+    
+	public void insertIntoNode(BTreeNode node, long key) {
+		if(node == null) {
+			node = new BTreeNode(this.t, true);
+		}
+		int index = node.n - 1;
+		
+		if(node.leaf) {
+			while(index >= 0 && node.keys[index] > key) {
+				node.keys[index + 1] = node.keys[index];
+				node.values[index + 1] = node.values[index];
+				index--;
+			}
+			node.keys[index + 1] = key;
+			node.values[index + 1] = key;
+			node.n++;
+		} else {
+			while(index >= 0 && node.keys[index] > key) {
+				index--;
+			}
+			if(node.children[index + 1] != null && node.children[index + 1].n == (2 * this.t) - 1) {
+				split(node, index + 1);
+				if(node.keys[index + 1] < key) {
+					index++;
+				}
+			}
+			insertIntoNode(node.children[index + 1], key);
+		}
 
+	}
+	
+	private void split(BTreeNode node, int index) {
+		BTreeNode child = node.children[index];
+		BTreeNode temp = new BTreeNode(child.t, child.leaf);
+		temp.n = this.t - 1;
+		
+		for(int offset = 0; offset < this.t - 1; offset++) {
+			temp.keys[offset] = child.keys[offset + this.t];
+			if(child.leaf) {
+				temp.values[offset] = child.values[offset + this.t];
+			} else {
+				temp.children[offset] = child.children[offset + this.t];
+			}
+		}
+		child.n = this.t - 1;
+		
+		for(int offset = 0; offset >= index + 1; offset--) {
+			node.children[offset + 1] = node.children[offset];
+		}
+		
+		node.children[index + 1] = temp;
+		
+		for(int offset = node.n - 1; offset >= index; offset--) {
+			node.keys[offset + 1] = node.keys[offset];
+			if(node.leaf) {
+				node.values[offset + 1] = node.values[offset];
+			}
+		}
+		
+		node.keys[index] = child.keys[this.t - 1];
+		if(node.leaf) {
+			node.values[index] = child.values[this.t - 1];
+		}
+		node.n++;
+	}
+	
+	public void insertToFile(String csv, Student s) {
+		BufferedWriter bw = null;
+
+		try {
+			bw = new BufferedWriter(new FileWriter(csv, true));
+			
+			String entry = s.studentId+","+s.studentName+","+s.major+","+s.level+","+s.age+","+s.recordId+"\n";
+
+			bw.append(entry);
+			bw.close();
+		} catch(FileNotFoundException e) {
+			e.printStackTrace();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			if(bw != null) {
+				try {
+					bw.close();
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+    
     boolean delete(long studentId) {
-        /**
-         * TODO:
-         * Implement this function to delete in the B+Tree.
+        /** 
+         * Delete studentId from the B+Tree.
          * Also, delete in student.csv after deleting in B+Tree, if it exists.
          * Return true if the student is deleted successfully otherwise, return false.
          */
@@ -147,7 +235,7 @@ class BTree {
     				index_stack.push(child);
     				break;
     			}
-    			else if(studentId == node.keys[child] || child + 1 == node.keys.length) {
+    			else if(studentId == node.keys[child] || child + 1 == node.n) {
     				node = node.children[child + 1];
     	    		parent_stack.push(node);
     				index_stack.push(child);
@@ -162,6 +250,7 @@ class BTree {
     	for(int index = 0; index < node.n; index++) {
     		if(studentId == node.values[index]) {
     			found = true;
+    			break;
     		}
     	}
     	
@@ -171,7 +260,7 @@ class BTree {
     			BTreeNode parent = parent_stack.pop();
     			int index = index_stack.pop();
     			deleteFromNode(parent, index);
-    			if(parent.children[index].n < parent.t) {
+    			if(parent.children[index] != null && parent.children[index].n < this.t) {
     				fill(parent, index);
     			}
     		}
@@ -206,11 +295,6 @@ class BTree {
     		}
     	}
     }
-	
-	public void insertIntoNode(BTreeNode node, int index) {
-		if(node.leaf){
-
-	}
 
     public BTreeNode getSucc(BTreeNode node) {
     	BTreeNode curr = node;
@@ -256,9 +340,6 @@ class BTree {
     	node.n--;
 	}
 	
-	private void split(BTreeNode node, int index) {
-		//
-	}
     
     public void fill(BTreeNode node, int index) {
     	if(index != 0 && node.children[index - 1].n >= t) {
@@ -358,35 +439,6 @@ class BTree {
 		}
 	}
 	
-	public void insertToFile(String csv, Student s) {
-		File file = new File(csv);
-		FileWriter fw = null;
-		BufferedWriter bw = null;
-
-		try {
-			fw = new FileWriter(file);
-			bw = new BufferedWriter(fw);
-			PrintWriter pw = new PrintWriter(bw);
-			
-			String entry = s.studentId+","+s.age+","+s.studentName+","+s.major+","+s.level+","+s.recordId;
-
-			pw.println(entry);
-			pw.close();
-		} catch(FileNotFoundException e) {
-			e.printStackTrace();
-		} catch(IOException e) {
-			e.printStackTrace();
-		} finally {
-			if(bw != null) {
-				try {
-					bw.close();
-				} catch(IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-    
     List<Long> print() {
         /**
          * Return a list of recordIDs from left to right of leaf nodes.
@@ -406,6 +458,6 @@ class BTree {
         }
         while (cur.next != null);
         
-        return listOfRecordID;
-    }
+		return listOfRecordID;
+	}
 }

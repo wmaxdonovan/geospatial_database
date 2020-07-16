@@ -1,12 +1,9 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.lang.Math;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 /**
  * Main Application.
@@ -58,7 +55,7 @@ public class BTreeMain {
                             String major = s2.next();
                             String level = s2.next();
                             int age = Integer.parseInt(s2.next());
-                            long recordID = ++recordIndex;
+                            long recordID = Integer.parseInt(s2.next());
 
                             Student s = new Student(studentId, age, studentName, major, level, recordID);
                             bTree.insert(s);
