@@ -296,6 +296,7 @@ class BTree {
     	}
     }
 
+
     public BTreeNode getSucc(BTreeNode node) {
     	BTreeNode curr = node;
     	while(!curr.leaf) {
