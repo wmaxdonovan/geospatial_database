@@ -86,19 +86,19 @@ class BTree {
 
 		BTreeNode node = this.root;
 
-		if(node == null) {
+		if(node == null || student == null) {
     		return null;
     	}
 
 		 if(!node.leaf) {
-    		for(int child = 0; child < node.n; child++) {
-				insertIntoNode(node, child, student);
-				if(student == null){
-					return null; //not sure about return
+    		for(int i = 0; i < node.n; i++) {
+
+				if(student.studentId>=node.keys[i] && student.studentId <= node.keys[i+1]){
+					insert(student);//recurse down tree
 				}
 				else {
 					if (node.n < node.t) { //has room
-						insertIntoNode(node, child, student);
+						insertIntoNode(node, i, student);
 						student = null;
 						return null; //what should be returned?
 					}
@@ -107,8 +107,8 @@ class BTree {
 						if (node==this.root) {
 							//new node w pointer to inserted ? and update root ptr
 							BTreeNode newnode = new BTreeNode(t, false);
-							root.keys[child] = newnode.keys[child];
-							insertIntoNode(newnode, child, student);
+							root.keys[i] = newnode.keys[i];
+							insertIntoNode(newnode, i, student);
 						}
 					}
 				}
