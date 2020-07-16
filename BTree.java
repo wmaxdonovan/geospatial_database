@@ -86,24 +86,29 @@ class BTree {
 
 		BTreeNode node = this.root;
 
+		if(node == null) {
+    		return null;
+    	}
+
 		 if(!node.leaf) {
     		for(int child = 0; child < node.n; child++) {
-				insertIntoNode(node, child); //
+				insertIntoNode(node, child, student);
 				if(student == null){
-					return null;
+					return null; //not sure about return
 				}
 				else {
-					if (node.n < node.t) {
-						insertIntoNode(node, child); //not sure this line is right
+					if (node.n < node.t) { //has room
+						insertIntoNode(node, child, student);
 						student = null;
-						return this; //? 
+						return null; //what should be returned?
 					}
 					else {
-						//split
+						split(node);
 						if (node==this.root) {
 							//new node w pointer to inserted ? and update root ptr
 							BTreeNode newnode = new BTreeNode(t, false);
-							//set root pntr
+							root.keys[child] = newnode.keys[child];
+							insertIntoNode(newnode, child, student);
 						}
 					}
 				}
@@ -111,7 +116,7 @@ class BTree {
 		 }
 		 if (node.leaf) {
 			 if(node.n < node.t) {
-				insert(student); //again, wtf is this
+				insertIntoNode(node, (int)student.studentId, student);
 				student = null;
 			 }
 		 }
@@ -207,9 +212,14 @@ class BTree {
     	}
     }
 	
-	public void insertIntoNode(BTreeNode node, int index) {
-		if(node.leaf){
-
+	public void insertIntoNode(BTreeNode node, int index, Student s) {
+		for(int i = index + 1; i < node.n; i++) {
+			//make space
+			node.keys[i+1]=node.keys[i];
+			node.values[i+1]=node.values[i];
+		}
+		node.keys[index]=s.studentId; //do I have this backwards?
+		node.values[index]=s.recordId;
 	}
 
     public BTreeNode getSucc(BTreeNode node) {
@@ -256,8 +266,25 @@ class BTree {
     	node.n--;
 	}
 	
-	private void split(BTreeNode node, int index) {
-		//
+	private void split(BTreeNode node) {
+		BTreeNode left = new BTreeNode(node.n, node.leaf);
+		BTreeNode right = new BTreeNode(node.n, node.leaf);
+		
+		for (int i = 0; i < node.n/2; i++) {
+			left.keys[i]=node.keys[i];
+			left.values[i]=node.values[i];
+		}
+
+		for (int i = node.n/2; i < node.n; i++) {
+			right.keys[i]=node.keys[i];
+			right.values[i]=right.values[i];
+		}
+		
+		if (node.leaf) {
+			left.next=right;
+		}
+		
+		//parent needs to link appropriately!
 	}
     
     public void fill(BTreeNode node, int index) {
