@@ -1,3 +1,0 @@
-Student deleted successfully.
-Student exists in the database at <recordID>
-Student exists in the database at 15
