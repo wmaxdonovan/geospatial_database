@@ -1,2 +1,2 @@
-def query_options():
+def query_options(database):
     pass

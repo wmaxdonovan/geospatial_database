@@ -36,13 +36,13 @@ def user_prompt():
 
     while select != 'q':
         if select == 'i':
-            input_prompt.initiate_insert()
+            input_prompt.initiate_insert(database)
         elif select == 'd':
-            delete_prompt.initiate_delete()
+            delete_prompt.initiate_delete(database)
         elif select == 'm':
-            modify_prompt.initiate_modify()
+            modify_prompt.initiate_modify(database)
         elif select == 'o':
-            query_prompt.query_options()
+            query_prompt.query_options(database)
         else:
             select = selection_prompt()
 

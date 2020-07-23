@@ -1,2 +1,2 @@
-def initiate_modify():
+def initiate_modify(database):
     pass
