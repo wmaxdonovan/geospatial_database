@@ -33,7 +33,7 @@ class Database:
                              'FOREIGN KEY(county_id) REFERENCES county(id))')
             self.cur.execute('CREATE TABLE IF NOT EXISTS improvement '
                              '(id INTEGER NOT NULL PRIMARY KEY, '
-                             'management VARCHAR, '
+                             'improvement_type VARCHAR, '
                              'cost FLOAT, '
                              'improvement INTEGER)')
 
@@ -92,10 +92,10 @@ class Database:
                          'VALUES (?, ?, ?, ?)',
                          (int(county_id), county_name, int(pop), float(growth_rate)))
 
-    def insert_into_improvement(self, improvement_id, management, cost, improvement):
-        self.cur.execute('INSERT INTO improvement (id, management, cost, improvement)'
+    def insert_into_improvement(self, improvement_id, improvement_type, cost, improvement):
+        self.cur.execute('INSERT INTO improvement (id, improvement_type, cost, improvement)'
                          'VALUES (?, ?, ?, ?)',
-                         (int(improvement_id), management, float(cost), int(improvement)))
+                         (int(improvement_id), improvement_type, float(cost), int(improvement)))
 
     def insert_into_owner(self, owner_id, status, name):
         self.cur.execute('INSERT INTO owner (id, status, name)'

@@ -10,6 +10,7 @@ def get_base_dir():
         return Path(__file__).resolve().parents[1]
 
 
-def exit_TEAL():
+def exit_TEAL(database):
+    database.conn.close()
     sys.stdout.write("Exiting TEAL")
     sys.exit()
