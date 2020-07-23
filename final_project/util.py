@@ -8,3 +8,8 @@ def get_base_dir():
 
     else:
         return Path(__file__).resolve().parents[1]
+
+
+def exit_TEAL():
+    sys.stdout.write("Exiting TEAL")
+    sys.exit()

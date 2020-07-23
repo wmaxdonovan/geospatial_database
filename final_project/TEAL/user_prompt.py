@@ -1,7 +1,6 @@
 import sys
 from final_project import util
-from final_project.TEAL import queries
-
+from final_project.TEAL import queries, input_prompt, modify_prompt, delete_prompt, query_prompt
 
 def user_prompt():
     sys.stdout.write("Welcome to TEAL (Texas Explorer for Arid Land)\n\t"
@@ -15,7 +14,7 @@ def user_prompt():
         land_csv = util.get_base_dir() / 'final_project/input/land.csv'
         county_csv = util.get_base_dir() / 'final_project/input/county.csv'
         owner_csv = util.get_base_dir() / 'final_project/input/owner.csv'
-        improvement_csv = util.get_base_dir() / 'final_project/input/land_improvement.csv'
+        improvement_csv = util.get_base_dir() / 'final_project/input/improvement.csv'
 
     else:
         database_file = get_database("Please provide a path to the database: ")
@@ -31,12 +30,37 @@ def user_prompt():
     database.load_owner_data(owner_csv)
     database.load_improvement_data(improvement_csv)
 
+    sys.stdout.write('Database successfully initialized.')
+
+    select = selection_prompt()
+
+    while select != 'q':
+        if select == 'i':
+            input_prompt.initiate_insert()
+        elif select == 'd':
+            delete_prompt.initiate_delete()
+        elif select == 'm':
+            modify_prompt.initiate_modify()
+        elif select == 'o':
+            query_prompt.query_options()
+        else:
+            select = selection_prompt()
+
+
+def selection_prompt():
+    select = input("Operations: \n\t"
+                     "Initiate insert: i \n"
+                     "Initiate delete: d \n"
+                     "Initiate modification: m \n"
+                     "Query Options: o \n")
+
+    return select
+
 
 def get_database(prompt):
     database_file = input(prompt)
     if database_file.lower() == 'q':
-        sys.stdout.write("Exiting TEAL")
-        sys.exit()
+        util.exit_TEAL()
 
     if not database_file.endswith('.sqlite'):
         get_database('Please provide a path to a sqlite file')
@@ -52,8 +76,7 @@ def get_database(prompt):
 def get_csv(prompt):
     csv = input(prompt)
     if csv.lower() == 'q':
-        sys.stdout.write("Exiting TEAL")
-        sys.exit()
+        exit_TEAL()
 
     if not csv.endswith('.csv'):
         get_csv("Please provide the data in csv format: ")
