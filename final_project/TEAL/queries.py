@@ -42,6 +42,9 @@ class Database:
                   " to initialize the database: ", e)
             exit(1)
 
+    def delete_table(self, table_name):
+        self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
+
     def load_land_data(self, land_csv):
         with land_csv.open('r') as land_csv:
             read_csv = csv.reader(land_csv, delimiter=',')
