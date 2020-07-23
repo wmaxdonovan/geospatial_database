@@ -49,10 +49,10 @@ def user_prompt():
 
 def selection_prompt():
     select = input("Operations: \n\t"
-                     "Initiate insert: i \n"
-                     "Initiate delete: d \n"
-                     "Initiate modification: m \n"
-                     "Query Options: o \n")
+                     "Initiate insert: i \n\t"
+                     "Initiate delete: d \n\t"
+                     "Initiate modification: m \n\t"
+                     "Query Options: o \n\t")
 
     return select
 
