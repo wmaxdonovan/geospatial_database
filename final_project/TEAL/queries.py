@@ -142,7 +142,7 @@ class Database:
         self.cur.execute('SELECT * '
                          'FROM land '
                          'WHERE ((? IS NULL) OR (area >= ?)) '
-                         'OR ((? IS NULL) OR (area <= ?))',
+                         'AND ((? IS NULL) OR (area <= ?))',
                          (min_area, min_area, max_area, max_area))
 
     def get_land_by_owner(self, owner_id, owner_name):
@@ -151,14 +151,14 @@ class Database:
                          'INNER JOIN owner '
                          'ON owner.id = land.owner_id '
                          'WHERE((? IS NULL) OR (? = land.owner_id)) '
-                         'OR ((? IS NULL) OR (? = owner.name))',
+                         'AND ((? IS NULL) OR (? = owner.name))',
                          (owner_id, owner_id, owner_name, owner_name))
 
     def get_land_by_quality_rating(self, min_rating, max_rating):
         self.cur.execute('SELECT * '
                          'FROM land '
                          'WHERE((? IS NULL) OR (rating >= ?)) '
-                         'OR ((? IS NULL) OR (rating <= ?))',
+                         'AND ((? IS NULL) OR (rating <= ?))',
                          (min_rating, min_rating, max_rating, max_rating))
 
     def view_land_details(self):
@@ -210,14 +210,15 @@ class Database:
                          'ON county.id = land.county_id '
                          'WHERE land.rating <= ? '
                          'GROUP BY county.id, county.name ',
-                         (critical_threshold))
+                         critical_threshold)
 
     def get_land_by_status(self, land_status):
         self.cur.execute('SELECT * '
                          'FROM land '
                          'INNER JOIN owner '
                          'ON owner.id = land.owner_id '
-                         'WHERE owner.status = ?', land_status)
+                         'WHERE owner.status = ?',
+                         (land_status))
 
     def generic_query(self, table, distinct, compare_val, condition):
         query = "SELECT "

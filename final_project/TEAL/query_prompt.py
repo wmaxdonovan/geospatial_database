@@ -63,7 +63,7 @@ def query_options(database):
             table = input('table to perform query on: \t')
             distinct = input('DISTINCT (y/n): \t').lower() == 'y'
             compare_val = input('attribute to be queried: \t')
-            condition = input('condition on attribute (accepts range using >, <, =')
+            condition = input('condition on attribute (accepts range using >, <, =): ')
 
             database.generic_query(table, distinct, compare_val, condition)
         else:
