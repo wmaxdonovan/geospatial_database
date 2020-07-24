@@ -210,7 +210,7 @@ class Database:
                          'ON county.id = land.county_id '
                          'WHERE land.rating <= ? '
                          'GROUP BY county.id, county.name ',
-                         critical_threshold)
+                         (critical_threshold))
 
     def get_land_by_status(self, land_status):
         self.cur.execute('SELECT * '

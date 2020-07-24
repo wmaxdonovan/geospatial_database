@@ -29,7 +29,7 @@ def initiate_insert(database):
                              'owner\n')
             initiate_insert(database)
     except Exception as e:
-        print('Encountered error ', e, ' while attempting to insert.')
+        print('Encountered error: ', e, ' while attempting to insert.')
         initiate_insert(database)
 
     repeat(database)

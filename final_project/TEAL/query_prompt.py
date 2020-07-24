@@ -73,7 +73,7 @@ def query_options(database):
         database.write_result()
 
     except Exception as e:
-        print("Encountered error", e, "while processing query")
+        print("Encountered error: ", e, "while processing query")
         query_options(database)
 
     repeat(database)

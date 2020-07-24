@@ -28,7 +28,7 @@ def initiate_delete(database):
                              'owner\n\t')
             initiate_delete(database)
     except Exception as e:
-        print("Encountered error", e, "while attempting delete.")
+        print("Encountered error: ", e, "while attempting delete.")
         initiate_delete(database)
     repeat(database)
 
