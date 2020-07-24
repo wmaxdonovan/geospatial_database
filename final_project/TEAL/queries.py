@@ -220,6 +220,70 @@ class Database:
                          'WHERE owner.status = ?',
                          (land_status))
 
+    def optimize(self, owner_id, county_id):
+        self.cur.execute('SELECT * '
+                         'FROM improvement')
+
+        improvement = {}
+
+        row = self.cur.fetchone()
+        while row is not None:
+            id = row[0]
+            improvement_type = row[1]
+            cost = row[2]
+            rating_improvement = row[3]
+            improvement[improvement_type] = {'id': id, 'cost': cost, 'rating_improvement': rating_improvement}
+            row = self.cur.fetchone()
+
+        query = 'SELECT land.id, land.rating, land.area ' \
+                'FROM land '
+
+        owner_flag = False
+        if owner_id != '':
+            owner_flag = True
+            query += 'INNER JOIN owner ' \
+                     'ON owner.id = land.owner_id '
+
+        county_flag = False
+        if county_id != '':
+            county_flag = True
+            query += 'INNER JOIN county ' \
+                     'ON county.id = land.county_id ' \
+                     'WHERE county.id = ' + county_id
+            if owner_flag:
+                query += ' AND owner.id = ' + owner_id
+
+        if not county_flag and owner_flag:
+            query += ' AND owner.id = ' + owner_id
+
+        self.cur.execute(query)
+
+        land = {}
+        row = self.cur.fetchone()
+        while row is not None:
+            id = row[0]
+            rating = row[1]
+            area = row[2]
+            land[id] = {'rating': rating, 'area': area}
+            row = self.cur.fetchone()
+
+        for improvement_type, improvement_data in zip(improvement.keys(), improvement.values()):
+            cost_sum = 0
+            improvement_sum = 0
+            land_sum = 0
+            for land_id, land_data in zip(land.keys(), land.values()):
+                land_sum += land_data['area']
+                cost_sum += (land_data['area'] * improvement_data['cost'])
+                improvement_sum += min(improvement_data['rating_improvement'], 8 - land_data['rating'])
+            improvement[improvement_type]['total_cost'] = cost_sum
+            improvement[improvement_type]['total_land'] = land_sum
+            improvement[improvement_type]['avg_improvement'] = improvement_sum / len(land)
+            improvement[improvement_type]['cost_per_unit_improvement'] = \
+                round(cost_sum / improvement[improvement_type]['avg_improvement'], 3)
+
+        for improvement_type in improvement:
+            print(improvement_type, improvement[improvement_type])
+
     def generic_query(self, table, distinct, compare_val, condition):
         query = "SELECT "
         if distinct:

@@ -15,7 +15,8 @@ def query_options(database):
                    'Get Owners in County: 8\n\t'
                    'Get Critical Land Count by County: 9\n\t'
                    'Get Land by Owner Status: 10\n\t'
-                   'Formulate Custom Query: 11\n\t').lower()
+                   'Optimize Land Improvement: 11\n\t'
+                   'Formulate Custom Query: 12\n\t').lower()
 
     if select == 'q':
         util.exit_TEAL(database)
@@ -60,6 +61,10 @@ def query_options(database):
             status = input('ownership status for search (public/private): \t')
             database.get_land_by_status(status)
         elif select == 11:
+            owner_id = input('owner id for optimization: \t')
+            county_id = input('county id for optimization: \t')
+            database.optimize(owner_id, county_id)
+        elif select == 12:
             table = input('table to perform query on: \t')
             distinct = input('DISTINCT (y/n): \t').lower() == 'y'
             compare_val = input('attribute to be queried: \t')
