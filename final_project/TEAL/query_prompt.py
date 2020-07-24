@@ -38,7 +38,7 @@ def query_options(database):
         elif select == 3:
             owner_id = input('search owner id: \t')
             owner_name = input('search owner name: \t')
-            database.get_area_by_owner(owner_id, owner_name)
+            database.get_land_by_owner(owner_id, owner_name)
         elif select == 4:
             min_ratiing = input('minimum rating for search: \t')
             max_rating = input('maximum rating for search: \t')
@@ -69,6 +69,9 @@ def query_options(database):
         else:
             sys.stdout.write("Query selection not recognized.")
             query_options(database)
+
+        database.write_result()
+
     except Exception as e:
         print("Encountered error", e, "while processing query")
         query_options(database)
