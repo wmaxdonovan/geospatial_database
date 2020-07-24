@@ -279,7 +279,7 @@ class Database:
             improvement[improvement_type]['total_land'] = land_sum
             improvement[improvement_type]['avg_improvement'] = improvement_sum / len(land)
             improvement[improvement_type]['cost_per_unit_improvement'] = \
-                round(cost_sum / improvement[improvement_type]['avg_improvement'], 3)
+                round(cost_sum / improvement_sum, 3)
 
         for improvement_type in improvement:
             print(improvement_type, improvement[improvement_type])
