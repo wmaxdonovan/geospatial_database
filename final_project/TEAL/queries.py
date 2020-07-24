@@ -1,6 +1,7 @@
 import sqlite3
 import csv
 import sys
+from final_project.TEAL import input_prompt, delete_prompt, modify_prompt, user_prompt
 
 
 class Database:
@@ -44,22 +45,38 @@ class Database:
             exit(1)
 
     def insert_table(self, table_name, cols):
-        self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
-        self.cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
-                         'id INTEGER NOT NULL PRIMARY KEY')
+        try:
 
-        for name, data_type in zip(cols.keys(), cols.values()):
-            self.cur.execute('DECLARE ' + table_name + ' TABLE ' + name + ' ' + data_type)
+            self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
+            self.cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
+                             'id INTEGER NOT NULL PRIMARY KEY')
 
-        sys.stdout.write('Successfully inserted table ' + table_name + '\n')
+            for name, data_type in zip(cols.keys(), cols.values()):
+                self.cur.execute('DECLARE ' + table_name + ' TABLE ' + name + ' ' + data_type)
+
+            sys.stdout.write('Successfully inserted table ' + table_name + '\n')
+        except Exception as e:
+            print("The program encountered the following exception while trying"
+                  " to insert table " + table_name + ": ", e)
+            input_prompt.repeat(self)
 
     def delete_table(self, table_name):
-        self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
-        sys.stdout.write('Successfully deleted ' + table_name + '\n')
+        try:
+            self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
+            sys.stdout.write('Successfully deleted ' + table_name + '\n')
+        except Exception as e:
+            print("The program encountered the following exception while trying"
+                  " to delete table " + table_name + ": ", e)
+            delete_prompt.repeat(self)
 
     def delete_item(self, table_name, col, condition):
-        self.cur.execute('DELETE FROM ' + table_name + ' WHERE ' + col + condition)
-        sys.stdout.write('Successfully deleted ' + condition + ' from ' + col + ' in ' + table_name + '\n')
+        try:
+            self.cur.execute('DELETE FROM ' + table_name + ' WHERE ' + col + condition)
+            sys.stdout.write('Successfully deleted ' + condition + ' from ' + col + ' in ' + table_name + '\n')
+        except Exception as e:
+            print("The program encountered the following exception while trying"
+                  " to delete " + col + condition + " from " + table_name + ": ", e)
+            delete_prompt.repeat(self)
 
     def load_land_data(self, land_csv):
         with land_csv.open('r') as land_csv:
@@ -102,28 +119,44 @@ class Database:
                 self.insert_into_owner(row[0], row[1], row[2])
 
     def insert_into_land(self, land_id, owner_id, county_id, rating, area):
-        self.cur.execute('INSERT INTO land (id, owner_id, county_id, rating, area)'
-                         'VALUES (?, ?, ?, ?, ?)',
-                         (int(land_id), int(owner_id), int(county_id), int(rating), int(area)))
+        try:
+            self.cur.execute('INSERT INTO land (id, owner_id, county_id, rating, area)'
+                             'VALUES (?, ?, ?, ?, ?)',
+                             (int(land_id), int(owner_id), int(county_id), int(rating), int(area)))
+        except Exception as e:
+            print("The program encountered the following exception while trying"
+                  " to insert " + land_id + " into land: ", e)
+            input_prompt.repeat(self)
 
     def insert_into_county(self, county_id, county_name, pop, growth_rate):
-        self.cur.execute('INSERT INTO county (id, county_name, pop, growth_rate)'
-                         'VALUES (?, ?, ?, ?)',
-                         (int(county_id), county_name, int(pop), float(growth_rate)))
+        try:
+            self.cur.execute('INSERT INTO county (id, county_name, pop, growth_rate)'
+                             'VALUES (?, ?, ?, ?)',
+                             (int(county_id), county_name, int(pop), float(growth_rate)))
+        except Exception as e:
+            print("The program encountered the following exception while trying"
+                  " to insert " + county_id + " into county: ", e)
+            input_prompt.repeat(self)
 
     def insert_into_improvement(self, improvement_id, improvement_type, cost, improvement):
-        self.cur.execute('INSERT INTO improvement (id, improvement_type, cost, improvement)'
-                         'VALUES (?, ?, ?, ?)',
-                         (int(improvement_id), improvement_type, float(cost), int(improvement)))
+        try:
+            self.cur.execute('INSERT INTO improvement (id, improvement_type, cost, improvement)'
+                             'VALUES (?, ?, ?, ?)',
+                             (int(improvement_id), improvement_type, float(cost), int(improvement)))
+        except Exception as e:
+            print("The program encountered the following exception while trying"
+                  " to insert " + improvement_id + " into improvement: ", e)
+            input_prompt.repeat(self)
 
     def insert_into_owner(self, owner_id, status, name):
-        self.cur.execute('INSERT INTO owner (id, status, name)'
-                         'VALUES (?, ?, ?)',
-                         (int(owner_id), status, name))
-
-    def remove_from_table(self, table, table_id):
-        self.cur.execute('DELETE FROM ' + table +
-                         'WHERE id = ?' + int(table_id))
+        try:
+            self.cur.execute('INSERT INTO owner (id, status, name)'
+                             'VALUES (?, ?, ?)',
+                             (int(owner_id), status, name))
+        except Exception as e:
+            print("The program encountered the following exception while trying"
+                  " to insert " + owner_id + " into owner: ", e)
+            input_prompt.repeat(self)
 
     def write_csv(self, csv_path):
         with csv_path.open('w') as write_csv:

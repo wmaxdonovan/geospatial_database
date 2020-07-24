@@ -25,7 +25,7 @@ def initiate_insert(database):
                          'land\n\t'
                          'county\n\t'
                          'improvement\n\t'
-                         'owner\n\t')
+                         'owner\n')
         initiate_insert(database)
 
     repeat(database)
