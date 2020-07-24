@@ -1,7 +1,7 @@
 import sqlite3
 import csv
 import sys
-from final_project.TEAL import input_prompt, delete_prompt, modify_prompt, user_prompt
+from final_project.TEAL import user_prompt
 
 
 class Database:
@@ -42,41 +42,25 @@ class Database:
         except Exception as e:
             print("The program encountered the following exception while trying"
                   " to initialize the database: ", e)
-            exit(1)
+            user_prompt.user_prompt()
 
     def insert_table(self, table_name, cols):
-        try:
+        self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
+        self.cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
+                         'id INTEGER NOT NULL PRIMARY KEY')
 
-            self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
-            self.cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
-                             'id INTEGER NOT NULL PRIMARY KEY')
+        for name, data_type in zip(cols.keys(), cols.values()):
+            self.cur.execute('DECLARE ' + table_name + ' TABLE ' + name + ' ' + data_type)
 
-            for name, data_type in zip(cols.keys(), cols.values()):
-                self.cur.execute('DECLARE ' + table_name + ' TABLE ' + name + ' ' + data_type)
-
-            sys.stdout.write('Successfully inserted table ' + table_name + '\n')
-        except Exception as e:
-            print("The program encountered the following exception while trying"
-                  " to insert table " + table_name + ": ", e)
-            input_prompt.repeat(self)
+        sys.stdout.write('Successfully inserted table ' + table_name + '\n')
 
     def delete_table(self, table_name):
-        try:
-            self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
-            sys.stdout.write('Successfully deleted ' + table_name + '\n')
-        except Exception as e:
-            print("The program encountered the following exception while trying"
-                  " to delete table " + table_name + ": ", e)
-            delete_prompt.repeat(self)
+        self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
+        sys.stdout.write('Successfully deleted ' + table_name + '\n')
 
     def delete_item(self, table_name, col, condition):
-        try:
-            self.cur.execute('DELETE FROM ' + table_name + ' WHERE ' + col + condition)
-            sys.stdout.write('Successfully deleted ' + condition + ' from ' + col + ' in ' + table_name + '\n')
-        except Exception as e:
-            print("The program encountered the following exception while trying"
-                  " to delete " + col + condition + " from " + table_name + ": ", e)
-            delete_prompt.repeat(self)
+        self.cur.execute('DELETE FROM ' + table_name + ' WHERE ' + col + condition)
+        sys.stdout.write('Successfully deleted ' + condition + ' from ' + col + ' in ' + table_name + '\n')
 
     def load_land_data(self, land_csv):
         with land_csv.open('r') as land_csv:
@@ -119,51 +103,31 @@ class Database:
                 self.insert_into_owner(row[0], row[1], row[2])
 
     def insert_into_land(self, land_id, owner_id, county_id, rating, area):
-        try:
-            self.cur.execute('INSERT INTO land (id, owner_id, county_id, rating, area)'
-                             'VALUES (?, ?, ?, ?, ?)',
-                             (int(land_id), int(owner_id), int(county_id), int(rating), int(area)))
-        except Exception as e:
-            print("The program encountered the following exception while trying"
-                  " to insert " + land_id + " into land: ", e)
-            input_prompt.repeat(self)
+        self.cur.execute('INSERT INTO land (id, owner_id, county_id, rating, area)'
+                         'VALUES (?, ?, ?, ?, ?)',
+                         (int(land_id), int(owner_id), int(county_id), int(rating), int(area)))
 
     def insert_into_county(self, county_id, county_name, pop, growth_rate):
-        try:
-            self.cur.execute('INSERT INTO county (id, county_name, pop, growth_rate)'
-                             'VALUES (?, ?, ?, ?)',
-                             (int(county_id), county_name, int(pop), float(growth_rate)))
-        except Exception as e:
-            print("The program encountered the following exception while trying"
-                  " to insert " + county_id + " into county: ", e)
-            input_prompt.repeat(self)
+        self.cur.execute('INSERT INTO county (id, county_name, pop, growth_rate)'
+                         'VALUES (?, ?, ?, ?)',
+                         (int(county_id), county_name, int(pop), float(growth_rate)))
 
     def insert_into_improvement(self, improvement_id, improvement_type, cost, improvement):
-        try:
-            self.cur.execute('INSERT INTO improvement (id, improvement_type, cost, improvement)'
-                             'VALUES (?, ?, ?, ?)',
-                             (int(improvement_id), improvement_type, float(cost), int(improvement)))
-        except Exception as e:
-            print("The program encountered the following exception while trying"
-                  " to insert " + improvement_id + " into improvement: ", e)
-            input_prompt.repeat(self)
+        self.cur.execute('INSERT INTO improvement (id, improvement_type, cost, improvement)'
+                         'VALUES (?, ?, ?, ?)',
+                         (int(improvement_id), improvement_type, float(cost), int(improvement)))
 
     def insert_into_owner(self, owner_id, status, name):
-        try:
-            self.cur.execute('INSERT INTO owner (id, status, name)'
-                             'VALUES (?, ?, ?)',
-                             (int(owner_id), status, name))
-        except Exception as e:
-            print("The program encountered the following exception while trying"
-                  " to insert " + owner_id + " into owner: ", e)
-            input_prompt.repeat(self)
+        self.cur.execute('INSERT INTO owner (id, status, name)'
+                         'VALUES (?, ?, ?)',
+                         (int(owner_id), status, name))
 
     def write_csv(self, csv_path):
-        with csv_path.open('w') as write_csv:
-            write_csv = csv.writer(write_csv, delimiter=',')
+        with csv_path.open('w') as csv_file:
+            csv_writer = csv.writer(csv_file, delimiter=',')
             row = self.cur.fetchone()
             while row is not None:
-                write_csv.writerow(row)
+                csv_writer.writerow(row)
                 row = self.cur.fetchone()
 
     def get_land_by_county(self, county_id, county_name):
@@ -253,120 +217,20 @@ class Database:
                          'ON owner.id = land.owner_id'
                          'WHERE owner.status = ?', land_status)
 
-    def generic_query(self, table, distinct=False, cols=None, identifier=None,
-                      desired_rows=None, compare_val=None, low_col=None, high_col=None):
-        """
-        Constructs and executes a query on @table of the following form
-        (all clauses in square brackets are optional, depending on parameters
-        given):
-        SELECT [DISTINCT] * FROM table [WHERE low_col <= compare_val AND
-            high_col >= compare_val] [AND/WHERE identifier IN (desired_rows)]
-        or, if columns are specified using @cols:
-        SELECT [DISTINCT] cols FROM table [WHERE low_col <= compare_val AND
-            high_col >= compare_val] [AND/WHERE identifier IN (desired_rows)]
-        The result of this query is returned.
-        If an exception is raised when connecting/querying the database, this
-        method prints the error message and quits the program.
+    def generic_query(self, table, distinct, compare_val, condition):
+        query = "SELECT "
+        if distinct:
+            query += "DISTINCT "
+        query += "* FROM " + table
+        if compare_val is not None:
+            query += " WHERE " + compare_val + condition
 
-        Args:
-            table: string - the name of the table to be queried
-            distinct: (optional) boolean - if true, the query result contains no
-                duplicates
-            cols: (optional) list of strings - each string in this list is a
-                column name that will be returned. If this argument is not
-                specified, all columns from the specified table will be returned
-            identifier: (optional) string - the column name which will be
-                compared to the desired_rows values. If this argument is
-                specified, desired_rows must also be specified, otherwise both
-                will be treated as None.
-            desired_rows: (optional) tuple of strings - the values of the
-                identifier column which are being queried. If this argument is
-                specified, identifier must also be specified, otherwise both
-                will be treated as None.
-            compare_val: (optional) string - the value which should fall in the
-                range of [low_col, high_col]. If this argument is specified,
-                low_col and high_col must also be specified, otherwise these
-                three arguments will be treated as None.
-            low_col: (optional) string - the column name of the lower bound of
-                the desired range. If this argument is specified, compare_val
-                and high_col must also be specified, otherwise these three
-                arguments will be treated as None.
-            high_col: (optional) string - the column name of the upper bound of
-                the desired range. If this argument is specified, compare_val
-                and low_col must also be specified, otherwise these three
-                arguments will be treated as None.
+        self.cur.execute(query)
 
-        Returns:
-            the result of the query formed as a list of dictionaries where each
-            dictionary represents a row returned (the keys in each dictionary
-            are the column names and they are mapped to the values in the
-            database)
-        """
-        try:
-            # Forms a connection to the database
-            self.conn.row_factory = sqlite3.Row
-
-            # the query starts with SELECT
-            query = "SELECT "
-
-            # if distinct is true, append the DISTINCT keyword
-            if distinct:
-                query += "DISTINCT "
-
-            # if cols is not specified, all columns are returned, otherwise
-            # the specified column names are joined by commas and inserted
-            # into the query
-            if cols is None:
-                query += "* FROM " + table
-            else:
-                query += ",".join(cols) + " FROM " + table
-
-            # appends the range part of the query if all 3 components are
-            # specified
-            append_range = compare_val is not None and \
-                           low_col is not None and \
-                           high_col is not None
-            if append_range:
-                query += " WHERE " + low_col + " <= " + compare_val + \
-                         " AND " + high_col + " >= " + compare_val
-
-            if desired_rows is None or identifier is None:
-                # Since identifier and desired_rows are None, the following
-                # command will execute the query as formulated above on all the
-                # rows of the database.
-                self.cur.execute(query)
-
-            else:
-                # if the range has already been appending, the identifier part
-                # of the query is another AND clause, otherwise it is the
-                # beginning of the WHERE clause
-                if append_range:
-                    query += " AND "
-                else:
-                    query += " WHERE "
-                # filters which rows should be returned from the query
-                query += identifier + " IN " + \
-                         "({})".format(','.join(['?'] * len(desired_rows)))
-                # Here, desired_rows is a parameter to the query as the list of
-                # rows for which information is wanted. This list will be
-                # formatted as specified in the query above (i.e. all elements
-                # are separated by a comma and the list is surrounded by
-                # parentheses).
-                self.cur.execute(query, desired_rows)
-
-            # construct a list of dictionaries, where each dictionary in
-            # the list corresponds to a row in the database table storing
-            # the information for the row
-            result = []
+        result = []
+        row = self.cur.fetchone()
+        while row is not None:
+            result.append(dict(row))
             row = self.cur.fetchone()
-            while row is not None:
-                result.append(dict(row))
-                row = self.cur.fetchone()
 
-            return result
-
-        except Exception as e:
-            print("DatabaseReader.query(): The program encountered the "
-                  "following exception while connecting to and querying table",
-                  table, "from database", self.db_file, ":", e, "\nExiting.")
-            exit(1)
+        return result

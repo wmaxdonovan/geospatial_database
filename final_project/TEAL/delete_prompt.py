@@ -4,29 +4,32 @@ from final_project.TEAL import user_prompt
 
 
 def initiate_delete(database):
-    table = input('Delete: \n\t'
-                  'Table name: \t').lower()
-    if table == 'q':
-        util.exit_TEAL(database)
-    elif table == 'land':
-        delete_land(database)
-    elif table == 'county':
-        delete_county(database)
-    elif table == 'improvement':
-        delete_improvement(database)
-    elif table == 'owner':
-        delete_owner(database)
-    elif table == '':
-        sys.stdout.write('Table must be specified for delete\t')
+    try:
+        table = input('Delete: \n\t'
+                      'Table name: \t').lower()
+        if table == 'q':
+            util.exit_TEAL(database)
+        elif table == 'land':
+            delete_land(database)
+        elif table == 'county':
+            delete_county(database)
+        elif table == 'improvement':
+            delete_improvement(database)
+        elif table == 'owner':
+            delete_owner(database)
+        elif table == '':
+            sys.stdout.write('Table must be specified for delete\t')
+            initiate_delete(database)
+        else:
+            sys.stdout.write('Did not recognize table name. Please specify table in database: \n\t'
+                             'land\n\t'
+                             'county\n\t'
+                             'improvement\n\t'
+                             'owner\n\t')
+            initiate_delete(database)
+    except Exception as e:
+        print("Encountered error", e, "while attempting delete.")
         initiate_delete(database)
-    else:
-        sys.stdout.write('Did not recognize table name. Please specify table in database: \n\t'
-                         'land\n\t'
-                         'county\n\t'
-                         'improvement\n\t'
-                         'owner\n\t')
-        initiate_delete(database)
-
     repeat(database)
 
 

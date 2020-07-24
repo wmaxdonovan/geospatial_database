@@ -4,28 +4,32 @@ from final_project.TEAL import user_prompt
 
 
 def initiate_insert(database):
-    table = input('Insert: \n\t'
-                  'If you do not wish to specify an input, press enter \n\t'
-                  'Table name: ').lower()
-    if table == 'q':
-        util.exit_TEAL(database)
-    elif table == 'land':
-        insert_land(database)
-    elif table == 'county':
-        insert_county(database)
-    elif table == 'improvement':
-        insert_improvement(database)
-    elif table == 'owner':
-        insert_owner(database)
-    elif table == '':
-        sys.stdout.write('Table must be specified for insert\n')
-        initiate_insert(database)
-    else:
-        sys.stdout.write('Did not recognize table name. Please specify table in database: \n\t'
-                         'land\n\t'
-                         'county\n\t'
-                         'improvement\n\t'
-                         'owner\n')
+    try:
+        table = input('Insert: \n\t'
+                      'If you do not wish to specify an input, press enter \n\t'
+                      'Table name: ').lower()
+        if table == 'q':
+            util.exit_TEAL(database)
+        elif table == 'land':
+            insert_land(database)
+        elif table == 'county':
+            insert_county(database)
+        elif table == 'improvement':
+            insert_improvement(database)
+        elif table == 'owner':
+            insert_owner(database)
+        elif table == '':
+            sys.stdout.write('Table must be specified for insert\n')
+            initiate_insert(database)
+        else:
+            sys.stdout.write('Did not recognize table name. Please specify table in database: \n\t'
+                             'land\n\t'
+                             'county\n\t'
+                             'improvement\n\t'
+                             'owner\n')
+            initiate_insert(database)
+    except Exception as e:
+        print('Encountered error ', e, ' while attempting to insert.')
         initiate_insert(database)
 
     repeat(database)
