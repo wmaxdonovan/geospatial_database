@@ -11,6 +11,7 @@ def get_base_dir():
 
 
 def exit_TEAL(database):
-    database.conn.close()
+    if database is not None:
+        database.conn.close()
     sys.stdout.write("Exiting TEAL")
     sys.exit()

@@ -1,5 +1,6 @@
 import sqlite3
 import csv
+import sys
 
 
 class Database:
@@ -42,8 +43,23 @@ class Database:
                   " to initialize the database: ", e)
             exit(1)
 
+    def insert_table(self, table_name, cols):
+        self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
+        self.cur.execute('CREATE TABLE IF NOT EXISTS ' + table_name +
+                         'id INTEGER NOT NULL PRIMARY KEY')
+
+        for name, data_type in zip(cols.keys(), cols.values()):
+            self.cur.execute('DECLARE ' + table_name + ' TABLE ' + name + ' ' + data_type)
+
+        sys.stdout.write('Successfully inserted table ' + table_name + '\n')
+
     def delete_table(self, table_name):
         self.cur.execute('DROP TABLE IF EXISTS ' + table_name)
+        sys.stdout.write('Successfully deleted ' + table_name + '\n')
+
+    def delete_item(self, table_name, col, condition):
+        self.cur.execute('DELETE FROM ' + table_name + ' WHERE ' + col + condition)
+        sys.stdout.write('Successfully deleted ' + condition + ' from ' + col + ' in ' + table_name + '\n')
 
     def load_land_data(self, land_csv):
         with land_csv.open('r') as land_csv:
